@@ -80,7 +80,7 @@ class Game:
         self.snake = Snake(7, 9)   
         self.food = Food(self.NB_CASES_X, self.NB_CASES_Y)
         self.food.random_food(self.snake.get_body())
-        self.path = []  # Chemin calculé par A*
+        self.path = []  
 
     def find_best_node(self, node_list):
         if not node_list:
@@ -96,7 +96,6 @@ class Game:
             new_x = x + dx
             new_y = y + dy
             
-
             if 0 <= new_x < self.NB_CASES_X and 0 <= new_y < self.NB_CASES_Y:
 
                 if (new_x, new_y) not in snake_body[:-1]:  
@@ -155,7 +154,71 @@ class Game:
                 else:
                     open_list.append(neighbor_node)
         
-        return False
+        return False  
+    
+
+    def calculer_score_queue(self, mouvement, queue_snake):
+        x, y = mouvement
+        qx, qy = queue_snake
+        distance = abs(x - qx) + abs(y - qy)
+        score = 100 / (distance + 1)
+        return score
+    
+    def calculer_score_espace(self, mouvement, corps_snake):
+        tab = set()
+        x, y = mouvement
+        attente = self.get_neighbors(x, y, corps_snake)
+
+        while attente:
+            x, y = attente.pop(0)
+            tab.add((x, y))
+
+            voisins = self.get_neighbors(x, y, corps_snake)
+
+            for voisin in voisins:
+                if voisin not in attente and voisin not in tab:
+                    attente.append(voisin)
+
+        return len(tab)
+
+    def calculer_score_food(self, mouvement, pos_food):
+        x, y = mouvement
+        fx, fy = pos_food
+
+        distance = abs(x - fx) + abs(y - fy)
+        score = 100 / (distance + 1)
+        return score
+
+    def calculer_score_options(self, mouvement, corps_snake):
+        x, y = mouvement
+
+        score = len(self.get_neighbors(x, y, corps_snake))
+        return score
+
+    
+    def survive(self, current_pos, snake_body, food_pos):
+        x, y = current_pos
+
+        candidats_mouvement = self.get_neighbors(x, y, snake_body)
+
+        if candidats_mouvement == []:
+            return []
+
+        meilleur_mouvement = None 
+        meilleur_score = float("-inf")
+
+        for mouvement in candidats_mouvement:
+            score1 = self.calculer_score_queue(mouvement, snake_body[-1])
+            score2 = self.calculer_score_food(mouvement, food_pos)
+            score3 = self.calculer_score_espace(mouvement, snake_body)
+            score4 = self.calculer_score_options(mouvement, snake_body)
+            final_score = (0.45 * score1) + (0.25 * score3) + (0.20 * score2) + (0.10 * score4)
+        
+            if final_score > meilleur_score:
+                meilleur_score = final_score
+                meilleur_mouvement = mouvement
+
+        return [meilleur_mouvement]
 
     def update_tableau(self):
         """Met à jour la représentation du plateau pour l'affichage"""
@@ -192,8 +255,10 @@ class Game:
             if not self.path:
                 current_pos = self.snake.get_head()
                 goal_pos = self.food.get_position()
+                snake_body = self.snake.get_body()
                 self.path = self.a_star(current_pos, goal_pos)
-                print(self.path)
+                if not self.path:
+                    self.path = self.survive(current_pos, snake_body, goal_pos)
                 
                 if not self.path:  
                     print("Aucun chemin trouvé vers la nourriture!")
@@ -219,8 +284,7 @@ class Game:
 
     def main(self):
         pygame.init()
-        fenetre = pygame.display.set_mode((self.NB_CASES_X * self.TAILLE_CASE, 
-                                         self.NB_CASES_Y * self.TAILLE_CASE))
+        fenetre = pygame.display.set_mode((self.NB_CASES_X * self.TAILLE_CASE, self.NB_CASES_Y * self.TAILLE_CASE))
         pygame.display.set_caption("Snake - Version A*")
         clock = pygame.time.Clock()
         

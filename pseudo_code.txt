@@ -1,0 +1,85 @@
+Ta fonction doit faire :
+A. Récupérer tous les mouvements possibles
+
+Les 4 directions autour de la tête
+Éliminer ceux qui sortent du plateau
+Éliminer ceux qui touchent le corps du snake
+(Tu as déjà ça dans ta fonction survive())
+
+B. Pour CHAQUE mouvement possible, calculer 4 scores :
+Score 1 : Suivre la queue 🎯
+
+Calculer la distance entre le mouvement candidat et la queue du snake (dernier segment)
+Plus la distance est petite = meilleur score
+Tu peux utiliser la distance de Manhattan : abs(x1-x2) + abs(y1-y2)
+Normaliser le score (par exemple : score = 100 / (distance + 1))
+
+Score 2 : Maximiser l'espace libre 📦
+
+Depuis le mouvement candidat, compter combien de cases libres sont accessibles
+2 façons de faire :
+
+Simple : compter juste les 4 voisins directs qui sont libres
+Plus complexe : faire un mini flood-fill pour compter toutes les cases accessibles dans un rayon
+
+
+Plus il y a d'espace = meilleur score
+
+Score 3 : Rester proche de la nourriture 🍎
+
+Calculer la distance entre le mouvement candidat et la nourriture
+Plus on est proche = meilleur score
+Utiliser distance de Manhattan
+Normaliser : score = 100 / (distance + 1)
+
+Score 4 : Éviter les impasses 🚪
+
+Depuis le mouvement candidat, compter combien de mouvements seraient possibles au tour SUIVANT
+Simuler : si je vais là, combien d'options j'aurai après ?
+Plus d'options = meilleur score
+score = nombre_options × 25 (par exemple)
+
+Score_final = (0.45 × score_queue) 
+            + (0.25 × score_espace) 
+            + (0.20 × score_nourriture) 
+            + (0.10 × score_impasse)
+```
+
+**D. Retourner le mouvement avec le meilleur score final**
+
+---
+
+## **ÉTAPE 3 : Structure de ta fonction**
+
+Ta fonction devrait ressembler à ça (en pseudo-code) :
+```
+fonction mode_survie_intelligent(position_tete, corps_snake, position_nourriture):
+    
+    # A. Récupérer mouvements possibles
+    mouvements_possibles = get_mouvements_valides()
+    
+    # Si aucun mouvement possible → game over
+    si mouvements_possibles est vide:
+        retourner None
+    
+    # B. Évaluer chaque mouvement
+    meilleur_mouvement = None
+    meilleur_score = -infini
+    
+    pour chaque mouvement dans mouvements_possibles:
+        # Calculer les 4 scores
+        score1 = calculer_score_queue(mouvement, queue_snake)
+        score2 = calculer_score_espace(mouvement, corps_snake)
+        score3 = calculer_score_nourriture(mouvement, position_nourriture)
+        score4 = calculer_score_options(mouvement, corps_snake)
+        
+        # Score composite
+        score_final = 0.45*score1 + 0.25*score2 + 0.20*score3 + 0.10*score4
+        
+        # Garder le meilleur
+        si score_final > meilleur_score:
+            meilleur_score = score_final
+            meilleur_mouvement = mouvement
+    
+    # C. Retourner le meilleur
+    retourner meilleur_mouvement
