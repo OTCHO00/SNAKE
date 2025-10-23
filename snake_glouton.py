@@ -1,9 +1,6 @@
-from typing import List, Tuple, Dict, Set
-from math import sqrt
-import numpy as np
 import pygame
 import random
-import heapq
+
 
 
 class Node:
@@ -34,7 +31,6 @@ class Snake:
         return self.body
     
     def move_a(self, next_position, is_food=False):
-        """Déplace le serpent vers la position donnée"""
         self.body.insert(0, next_position)
         if not is_food:  
             self.body.pop()

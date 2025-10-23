@@ -1,9 +1,6 @@
-from typing import List, Tuple, Dict, Set
-from math import sqrt
-import numpy as np
 import pygame
 import random
-import heapq
+
 
 
 class Node:
@@ -34,7 +31,6 @@ class Snake:
         return self.body
     
     def move_a(self, next_position, is_food=False):
-        """Déplace le serpent vers la position donnée"""
         self.body.insert(0, next_position)
         if not is_food:  
             self.body.pop()
@@ -80,7 +76,7 @@ class Game:
         self.snake = Snake(7, 9)   
         self.food = Food(self.NB_CASES_X, self.NB_CASES_Y)
         self.food.random_food(self.snake.get_body())
-        self.path = []  # Chemin calculé par A*
+        self.path = [] 
 
     def find_best_node(self, node_list):
         if not node_list:
